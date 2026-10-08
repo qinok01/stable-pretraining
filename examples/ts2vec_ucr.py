@@ -1,4 +1,24 @@
-"""Train TS2Vec on local UCR-style train/test TSV files and evaluate an SVC."""
+"""Train TS2Vec on fixed-length UCR train/test TSV files and evaluate an SVM.
+
+Each row contains an integer label followed by finite time-series values::
+
+    python examples/ts2vec_ucr.py ECG200_TRAIN.tsv ECG200_TEST.tsv --steps 200
+
+Training uses AdamW (lr=0.001, weight_decay=0.01) and batch size 16. Evaluation
+max-pools timestamp representations from the cumulative averaged encoder.
+The SVM's C is selected using training data only; test labels score accuracy.
+Grid search runs serially and is skipped when a class has fewer than five
+training examples. No forecasting or sliding-window inference is included.
+
+For a matched comparison, use zhihanyue/ts2vec at commit
+b0088e14a99706c05451316dc6db8d3da9351163 with identical data and settings::
+
+    python train.py ECG200 matched --loader UCR --seed 0 --iters 200 \
+        --batch-size 16 --repr-dims 320 --eval
+
+No matched benchmark result is claimed. ``--checkpoint`` saves model weights
+and the averaging counter; use Lightning checkpoints for optimizer resume.
+"""
 
 from __future__ import annotations
 

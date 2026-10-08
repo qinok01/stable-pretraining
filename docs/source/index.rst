@@ -22,7 +22,6 @@
     guides/custom_images
     guides/online_evaluation
     guides/resume
-    ts2vec
     guides/jet
     guides/agents
     cache_dir

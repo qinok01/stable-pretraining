@@ -16,6 +16,7 @@ Architectures
    Resnet9
    ConvMixer
    Jet
+   TS2VecEncoder
 
 Utility Functions
 -----------------
@@ -37,9 +38,3 @@ Specialized Modules
 
    TeacherStudentWrapper
    EvalOnly
-
-TS2Vec
-------
-
-.. autoclass:: stable_pretraining.backbone.TS2VecEncoder
-   :members:

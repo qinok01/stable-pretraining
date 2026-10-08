@@ -9,12 +9,7 @@ stable_pretraining.losses
    :template: myclass_template.rst
 
    NTXEntLoss
+   TS2VecLoss
    NegativeCosineSimilarity
    VICRegLoss
    BarlowTwinsLoss
-
-TS2Vec
-------
-
-.. autoclass:: stable_pretraining.losses.TS2VecLoss
-   :members:

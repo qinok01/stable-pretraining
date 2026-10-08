@@ -103,11 +103,4 @@ Other
    :template: myclass_template.rst
 
    NEPA
-
-TS2Vec
-------
-
-.. autoclass:: stable_pretraining.methods.TS2Vec
-   :members:
-
-See :doc:`../ts2vec` for the time-series workflow.
+   TS2Vec
