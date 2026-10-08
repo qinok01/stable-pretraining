@@ -1,4 +1,8 @@
-"""Train TS2Vec on fixed-length UCR train/test TSV files and evaluate an SVM.
+"""
+TS2Vec on UCR time series
+=========================
+
+Train on fixed-length UCR train/test TSV files and evaluate an SVM.
 
 Each row contains an integer label followed by finite time-series values::
 

@@ -73,15 +73,18 @@ def _dense_hierarchical_reference(
 
 
 @pytest.mark.unit
-def test_ts2vec_loss_matches_dense_reference_values_and_gradients():
+@pytest.mark.parametrize("temporal_unit", [0, 1, 2])
+def test_ts2vec_loss_matches_dense_reference_values_and_gradients(temporal_unit):
     torch.manual_seed(23)
     actual_a = torch.randn(3, 7, 4, dtype=torch.float64, requires_grad=True)
     actual_b = torch.randn(3, 7, 4, dtype=torch.float64, requires_grad=True)
     expected_a = actual_a.detach().clone().requires_grad_()
     expected_b = actual_b.detach().clone().requires_grad_()
 
-    actual = TS2VecLoss(alpha=0.37, temporal_unit=1)(actual_a, actual_b)
-    expected = _dense_hierarchical_reference(expected_a, expected_b, 0.37, 1)
+    actual = TS2VecLoss(alpha=0.37, temporal_unit=temporal_unit)(actual_a, actual_b)
+    expected = _dense_hierarchical_reference(
+        expected_a, expected_b, 0.37, temporal_unit
+    )
     actual_grads = torch.autograd.grad(actual, (actual_a, actual_b))
     expected_grads = torch.autograd.grad(expected, (expected_a, expected_b))
 
@@ -167,6 +170,9 @@ def test_ts2vec_encoder_shapes_nan_handling_and_input_immutability():
     assert torch.isfinite(y).all()
     assert torch.equal(torch.isnan(x), torch.isnan(original))
     assert torch.equal(torch.nan_to_num(x), torch.nan_to_num(original))
+    valid = ~x.isnan().any(dim=-1)
+    expected = encoder(torch.nan_to_num(x), mask=valid)
+    torch.testing.assert_close(y, expected)
 
 
 @pytest.mark.unit
@@ -213,7 +219,7 @@ def test_ts2vec_crop_views_preserve_their_shared_temporal_alignment(seed):
     x = torch.arange(4 * 13 * 2, dtype=torch.float32).reshape(4, 13, 2)
     view1, view2, overlap = _ts2vec_crops(x, temporal_unit=1)
 
-    assert 0 < overlap <= min(view1.size(1), view2.size(1))
+    assert 2 ** (1 + 1) <= overlap <= min(view1.size(1), view2.size(1))
     torch.testing.assert_close(view1[:, -overlap:], view2[:, :overlap])
     assert view1.shape[0] == view2.shape[0] == x.shape[0]
     assert view1.shape[2] == view2.shape[2] == x.shape[2]
