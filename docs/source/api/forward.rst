@@ -370,3 +370,8 @@ See Also
 - :doc:`losses` - Loss functions used by forward functions
 - :doc:`module` - The Module class that uses forward functions
 - :doc:`data` - Data utilities including ``fold_views``
+
+TS2Vec
+------
+
+.. autofunction:: ts2vec
