@@ -27,7 +27,10 @@ class TS2Vec(Module):
         Evaluation uses the cumulative average of the initial encoder and each
         completed optimizer update. Both encoders and the averaging counter are
         saved in Lightning checkpoints. This is not an EMA teacher objective.
-        Training uses local-batch negatives, as in the single-device reference.
+        Instance negatives are local to each rank, as in the single-device
+        reference. DDP averages gradients without gathering representations;
+        increasing world size does not increase the instance negative pool.
+        See :class:`~stable_pretraining.losses.TS2VecLoss` for batch semantics.
     """
 
     def __init__(

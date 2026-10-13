@@ -88,7 +88,9 @@ def ts2vec(self, batch: dict[str, Any], stage: str) -> dict[str, torch.Tensor]:
     Note:
         The two views share timestamps but have different surrounding context
         and independently sampled timestamp masks. No projector is used.
-        The loss uses local-batch negatives, matching the reference algorithm.
+        Instance negatives are local to each rank; no embeddings are gathered
+        across ranks. DDP synchronizes gradients only, so a larger world size
+        does not increase the negative pool for a fixed per-rank batch size.
     """
     x = batch["series"]
     out = {}

@@ -19,6 +19,15 @@ class TS2VecLoss(nn.Module):
 
     The loss uses raw dot-product similarities, without feature normalization
     or temperature scaling, as in the TS2Vec reference implementation.
+
+    Note:
+        Instance negatives are local to each rank: embeddings are never gathered
+        across processes. With per-rank batch size B, each anchor has 2(B - 1)
+        instance negatives and one positive at each timestamp. DDP averages
+        parameter gradients across ranks, but does not enlarge this negative
+        pool. Temporal negatives are timestamps within the same local series.
+        Thus DDP is not equivalent to a single-device global-batch objective;
+        a per-rank batch size of one has zero instance loss.
     """
 
     def __init__(self, alpha: float = 0.5, temporal_unit: int = 0) -> None:
