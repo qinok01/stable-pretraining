@@ -20,8 +20,10 @@ b0088e14a99706c05451316dc6db8d3da9351163 with identical data and settings::
     python train.py ECG200 matched --loader UCR --seed 0 --iters 200 \
         --batch-size 16 --repr-dims 320 --eval
 
-No matched benchmark result is claimed. ``--checkpoint`` saves model weights
-and the averaging counter; use Lightning checkpoints for optimizer resume.
+Reproducible CPU comparisons are provided in ``benchmarks/ts2vec/README.md``.
+``--checkpoint`` saves model weights and the averaging counter; use Lightning
+checkpoints for optimizer resume. Instance negatives are local to each rank;
+this example trains on one device.
 """
 
 from __future__ import annotations
@@ -71,6 +73,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dims", type=int, default=320)
     parser.add_argument("--hidden-dims", type=int, default=64)
     parser.add_argument("--depth", type=int, default=10)
+    parser.add_argument("--accelerator", choices=["auto", "cpu", "gpu"], default="auto")
     parser.add_argument("--checkpoint", type=Path)
     return parser.parse_args()
 
@@ -103,7 +106,7 @@ def main() -> None:
     trainer = pl.Trainer(
         max_steps=args.steps,
         max_epochs=-1,
-        accelerator="auto",
+        accelerator=args.accelerator,
         devices=1,
         logger=False,
         enable_checkpointing=False,
