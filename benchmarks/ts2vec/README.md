@@ -87,8 +87,9 @@ by the existing integration CI job; no GPU or dataset download is needed.
 
 Validation status: the local sandbox rejects Gloo socket creation with
 `Operation not permitted`, so the two-process test has **not passed locally**.
-It fails visibly rather than skipping this error. Upstream CI for commit
-`a3746741` is waiting for repository approval (`action_required`).
+It fails visibly rather than skipping this error. Upstream PR CI is waiting
+for repository approval (`action_required`). A passing two-process run is still
+required before marking DDP validation complete.
 
 ## Recorded results
 
@@ -107,3 +108,8 @@ the CPU-selection flag and benchmark harness in this change. `project_commit`
 records that base revision because the runs preceded the harness commit.
 The first two records predate the extra reference update-counter fields; their
 configured training budget is still recorded as 200 updates.
+
+For a committed reproduction target containing the CPU flag and complete
+harness, use `7e4995f089249638994ac0cbc0ef427aa9510534`. Its TS2Vec training
+logic is unchanged from the recorded base revision; the intervening production
+changes only expand the documentation.
