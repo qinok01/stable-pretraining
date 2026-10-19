@@ -312,6 +312,41 @@ def test_post_step_hook_counts_only_backbone_optimizer_updates():
 
 
 @pytest.mark.unit
+def test_post_step_hook_skips_fused_amp_update_on_overflow():
+    torch.manual_seed(43)
+    model = _model()
+    average = model.averaged_backbone
+    optimizer = torch.optim.AdamW(model.backbone.parameters(), lr=0.01, fused=True)
+    callback = TS2VecAveraging()
+    callback.on_fit_start(SimpleNamespace(optimizers=[optimizer]), model)
+    scaler = torch.amp.GradScaler("cpu")
+
+    # A real fused AMP step advances the average.
+    optimizer.zero_grad(set_to_none=True)
+    scaler.scale(model.backbone(torch.ones(2, 8, 2)).sum()).backward()
+    scaler.step(optimizer)
+    scaler.update()
+    assert average.n_averaged.item() == 2
+
+    # Fused AdamW's kernel skips parameter updates on overflow, but step hooks
+    # still run. The TS2Vec average must therefore remain unchanged as well.
+    before_parameters = deepcopy(model.backbone.state_dict())
+    before_average = deepcopy(average.module.state_dict())
+    optimizer.zero_grad(set_to_none=True)
+    scaler.scale(model.backbone(torch.ones(2, 8, 2)).sum()).backward()
+    next(model.backbone.parameters()).grad.fill_(float("inf"))
+    scaler.step(optimizer)
+    scaler.update()
+
+    assert average.n_averaged.item() == 2
+    for name, value in model.backbone.state_dict().items():
+        torch.testing.assert_close(value, before_parameters[name])
+    for name, value in average.module.state_dict().items():
+        torch.testing.assert_close(value, before_average[name])
+    callback.on_fit_end(SimpleNamespace(), model)
+
+
+@pytest.mark.unit
 def test_average_checkpoint_roundtrip_resumes_with_exact_running_average():
     torch.manual_seed(17)
     model = _model()

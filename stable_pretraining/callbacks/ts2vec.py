@@ -14,7 +14,8 @@ class TS2VecAveraging(pl.Callback):
     ``averaged_backbone``. ``TS2Vec`` installs it automatically.
 
     Note:
-        A post-step hook respects optimizer frequency and AMP-skipped steps.
+        A post-step hook respects optimizer frequency and AMP-skipped steps,
+        including fused optimizers that expose ``found_inf`` during the step.
         Callback-owned probe optimizers must not update the encoder average.
         Encoder parameters must all belong to exactly one optimizer.
     """
@@ -46,6 +47,13 @@ class TS2VecAveraging(pl.Callback):
         def update(
             optimizer: torch.optim.Optimizer, args: tuple, kwargs: dict[str, Any]
         ) -> None:
+            # GradScaler skips ordinary optimizer.step() calls on overflow. For
+            # AMP-aware fused optimizers, it calls step() and supplies found_inf
+            # so the fused kernel can skip its parameter update. The post-step
+            # hook still runs in that path, so do not count the stale weights.
+            found_inf = getattr(optimizer, "found_inf", None)
+            if found_inf is not None and found_inf.item() != 0:
+                return
             average.update_parameters(backbone)
 
         self._handle = owners[0][0].register_step_post_hook(update)
