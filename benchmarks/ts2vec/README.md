@@ -85,11 +85,14 @@ gradients, and the exact cumulative average. An independent cross-entropy
 calculation distinguishes local from global instance negatives. It is selected
 by the existing integration CI job; no GPU or dataset download is needed.
 
-Validation status: the local sandbox rejects Gloo socket creation with
-`Operation not permitted`, so the two-process test has **not passed locally**.
-It fails visibly rather than skipping this error. Upstream PR CI is waiting
-for repository approval (`action_required`). A passing two-process run is still
-required before marking DDP validation complete.
+Validation status: the two-process CPU/Gloo test passed in the fork's
+[Testing workflow](https://github.com/qinok01/stable-pretraining/actions/runs/39208936086)
+on commit `f6f74436e495fbde349ab8bb970920f90f413f18`. That run also passed
+regression tests, all four unit-test shards, JAX unit tests, and the combined
+coverage gate (minimum 95%). The earlier local sandbox attempt was blocked by
+Gloo socket permissions; the successful CI run completes CPU/Gloo DDP validation.
+Upstream PR checks for that commit remain `action_required` pending maintainer
+approval and are not reported as passing.
 
 ## Recorded results
 
